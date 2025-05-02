@@ -1,0 +1,6 @@
+alembic
+asyncpg
+fastapi[standard]
+sqlalchemy
+pydantic-settings
+pytest
