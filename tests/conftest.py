@@ -23,23 +23,20 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", name="engine")
 async def engine_fixture():
     test_async_engine = create_async_engine(TEST_DATABASE_URL, future=True)
 
     async with test_async_engine.begin() as conn:
+        await conn.run_sync(BaseEntity.metadata.drop_all)
         await conn.run_sync(BaseEntity.metadata.create_all)
 
     yield test_async_engine
 
-    async with test_async_engine.begin() as conn:
-        await conn.run_sync(BaseEntity.metadata.drop_all)
-
 
 @pytest.fixture(name="session")
-async def session_fixture(engine_fixture: AsyncEngine):
-    async_session_maker = async_sessionmaker(
-        engine_fixture, expire_on_commit=False,)
+async def session_fixture(engine: AsyncEngine):
+    async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session_maker() as session:
         yield session
 

@@ -1,38 +1,53 @@
+import pytest
 from httpx import AsyncClient
-from tests.conftest import client_fixture
 
 
-async def test_create_user(client: AsyncClient):
-    response = await client.post(
-        "/user/",
-        json={
-            "name": "Nikolai",
-            "surname": "Sviridov",
-            "email": "lol@kek.com"
-        }
-    )
+USER_DATA = [
+    {
+        "name": "Michael",
+        "surname": "Jackson",
+        "email": "mijackson@gmail.com"
+    },
+    {
+        "name": "Donald",
+        "surname": "Trump",
+        "email": "donny@maga.com"
+    },
+    {
+        "name": "Don",
+        "surname": "Huan",
+        "email": "dhuan@rambler.com"
+    },
+]
+
+
+@pytest.mark.parametrize("user", USER_DATA)
+async def test_create_user(client: AsyncClient, user: dict):
+    response = await client.post("/user/", json=user)
     data = response.json()
 
     assert response.status_code == 200
     assert data["user_id"] is not None
-    assert data["name"] == "Nikolai"
-    assert data["surname"] == "Sviridov"
-    assert data["email"] == "lol@kek.com"
+    assert data["name"] == user["name"]
+    assert data["surname"] == user["surname"]
+    assert data["email"] == user["email"]
     assert data["is_active"] == True
 
 
-async def test_get_user(client: AsyncClient):
-    response = await client.get(
-        "/user/",
-        params={"email": "lol@kek.com"}
-    )
+GET_USER_BY_EMAILS_PARAMS = [
+    {"email": "donny@maga.com"}
+]
 
+
+@pytest.mark.parametrize("user_params", GET_USER_BY_EMAILS_PARAMS)
+async def test_get_user(client: AsyncClient, user_params: dict):
+    response = await client.get("/user/", params=user_params)
     data = response.json()
     assert response.status_code == 200
     assert data["user_id"] is not None
-    assert data["name"] == "Nikolai"
-    assert data["surname"] == "Sviridov"
-    assert data["email"] == "lol@kek.com"
+    assert data["name"] == "Donald"
+    assert data["surname"] == "Trump"
+    assert data["email"] == "donny@maga.com"
     assert data["is_active"] == True
 
 
