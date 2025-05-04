@@ -1,6 +1,6 @@
 import asyncio
-from typing import AsyncGenerator
 
+import asyncpg
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
@@ -28,10 +28,12 @@ async def engine_fixture():
     test_async_engine = create_async_engine(TEST_DATABASE_URL, future=True)
 
     async with test_async_engine.begin() as conn:
-        await conn.run_sync(BaseEntity.metadata.drop_all)
         await conn.run_sync(BaseEntity.metadata.create_all)
 
     yield test_async_engine
+
+    async with test_async_engine.begin() as conn:
+        await conn.run_sync(BaseEntity.metadata.drop_all)
 
 
 @pytest.fixture(name="session")
@@ -39,6 +41,7 @@ async def session_fixture(engine: AsyncEngine):
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session_maker() as session:
         yield session
+        await session.rollback()
 
 
 @pytest.fixture(name="client")
@@ -55,3 +58,38 @@ async def client_fixture(session: AsyncSession):
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="session")
+async def asyncpg_pool():
+    pool = await asyncpg.create_pool("".join(TEST_DATABASE_URL.split("+asyncpg")))
+    yield pool
+    await pool.close()
+
+
+@pytest.fixture(autouse=True)
+async def clean_tables(asyncpg_pool):
+    yield
+
+    async with asyncpg_pool.acquire() as conn:
+        await conn.execute("""TRUNCATE TABLE users RESTART IDENTITY CASCADE;""")
+
+
+@pytest.fixture
+async def get_user_from_database(asyncpg_pool):
+
+    async def get_user_from_database_by_uuid(user_id: str):
+        async with asyncpg_pool.acquire() as connection:
+            return await connection.fetch("""SELECT * FROM users WHERE user_id = $1;""", user_id)
+
+    return get_user_from_database_by_uuid
+
+
+@pytest.fixture
+async def create_user_in_database(asyncpg_pool):
+
+    async def create_user_in_database(user_id: str, name: str, surname: str, email: str, is_active: bool):
+        async with asyncpg_pool.acquire() as connection:
+            return await connection.execute("""INSERT INTO users VALUES ($1, $2, $3, $4, $5)""",
+                                            user_id, name, surname, email, is_active)
+    return create_user_in_database
