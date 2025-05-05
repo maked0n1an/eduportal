@@ -1,24 +1,17 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import HTTPException
-from fastapi import Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.models import UserCreate
-from src.api.models import UserDeletedResponse
-from src.api.models import UserGetByEmailRequest
-from src.api.models import UserGetByIdRequest
-from src.api.models import UserShowResponse
-from src.api.models import UserUpdatedResponse
-from src.api.models import UserUpdateRequest
+from src.api.models import (UserCreate, UserDeletedResponse,
+                            UserGetByEmailRequest, UserGetByIdRequest,
+                            UserShowResponse, UserUpdatedResponse,
+                            UserUpdateRequest)
 from src.db.dals import UserDAL
 from src.db.database import get_db_session
 from src.db.models import UserEntity
-
 
 user_router = APIRouter()
 
@@ -83,7 +76,9 @@ async def _delete_user(user_id: UUID, db: AsyncSession) -> UUID | None:
 
 
 @user_router.post("/", response_model=UserShowResponse)
-async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db_session)):
+async def create_user(
+    body: UserCreate, db: AsyncSession = Depends(get_db_session)
+):
     return await _create_new_user(body, db)
 
 
@@ -132,7 +127,9 @@ async def update_user_by_id(
             status_code=404, detail=f"User with id {user_id} not found."
         )
 
-    updated_user_id = await _update_user(user_id, updated_user_params, db_session)
+    updated_user_id = await _update_user(
+        user_id, updated_user_params, db_session
+    )
     return UserUpdatedResponse(updated_user_id=updated_user_id)
 
 

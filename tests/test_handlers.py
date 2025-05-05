@@ -3,9 +3,7 @@ from uuid import uuid4
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import create_user_in_database
-from tests.conftest import get_user_from_database
-
+from tests.conftest import create_user_in_database, get_user_from_database
 
 USER_DATA = [
     {"name": "Michael", "surname": "Jackson", "email": "mijackson@gmail.com"},
@@ -28,7 +26,11 @@ async def test_create_user_parametrise(client: AsyncClient, user: dict):
 
 
 async def test_create_user(client: AsyncClient, get_user_from_database):
-    user_data = {"name": "Alex", "surname": "Sokol", "email": "nice@example.com"}
+    user_data = {
+        "name": "Alex",
+        "surname": "Sokol",
+        "email": "nice@example.com",
+    }
 
     response = await client.post("/user/", json=user_data)
     data_from_resp = response.json()
@@ -51,7 +53,11 @@ async def test_create_user(client: AsyncClient, get_user_from_database):
 async def test_create_and_get_user(client: AsyncClient):
     response = await client.post(
         "/user/",
-        json={"name": "Mykola", "surname": "Shevchenko", "email": "sheva@example.com"},
+        json={
+            "name": "Mykola",
+            "surname": "Shevchenko",
+            "email": "sheva@example.com",
+        },
     )
     data_from_resp = response.json()
 
@@ -62,7 +68,9 @@ async def test_create_and_get_user(client: AsyncClient):
     assert data_from_resp["email"] == "sheva@example.com"
     assert data_from_resp["is_active"] == True
 
-    response = await client.get("/user/by-email", params={"email": "sheva@example.com"})
+    response = await client.get(
+        "/user/by-email", params={"email": "sheva@example.com"}
+    )
     user_json = response.json()
 
     assert response.status_code == 200
@@ -91,7 +99,9 @@ async def test_update_user(
     await create_user_in_database(**user_data)
 
     response = await client.patch(
-        "/user/", params={"user_id": user_data["user_id"]}, json=user_data_updated
+        "/user/",
+        params={"user_id": user_data["user_id"]},
+        json=user_data_updated,
     )
     assert response.status_code == 200
     resp_data = response.json()
@@ -139,7 +149,9 @@ async def test_update_only_one_user(
         await create_user_in_database(**user_data)
 
     response = await client.patch(
-        "/user/", params={"user_id": user_data_1["user_id"]}, json=user_data_updated
+        "/user/",
+        params={"user_id": user_data_1["user_id"]},
+        json=user_data_updated,
     )
     assert response.status_code == 200
     resp_data = response.json()
@@ -182,7 +194,9 @@ async def test_delete_user(
     }
     await create_user_in_database(**user_data)
 
-    response = await client.delete("/user/", params={"user_id": user_data["user_id"]})
+    response = await client.delete(
+        "/user/", params={"user_id": user_data["user_id"]}
+    )
     assert response.status_code == 200
     assert response.json() == {"deleted_user_id": str(user_data["user_id"])}
 
@@ -206,8 +220,16 @@ async def test_delete_user(
                 "detail": "At least one parameter for user update info should be provided"
             },
         ),
-        ({"name": "123"}, 422, {"detail": "Name should contains only letters"}),
-        ({"surname": "123"}, 422, {"detail": "Surname should contains only letters"}),
+        (
+            {"name": "123"},
+            422,
+            {"detail": "Name should contains only letters"},
+        ),
+        (
+            {"surname": "123"},
+            422,
+            {"detail": "Surname should contains only letters"},
+        ),
         (
             {"email": ""},
             422,
@@ -218,7 +240,9 @@ async def test_delete_user(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "",
-                        "ctx": {"reason": "An email address must have an @-sign."},
+                        "ctx": {
+                            "reason": "An email address must have an @-sign."
+                        },
                     }
                 ]
             },
@@ -263,7 +287,9 @@ async def test_delete_user(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "123",
-                        "ctx": {"reason": "An email address must have an @-sign."},
+                        "ctx": {
+                            "reason": "An email address must have an @-sign."
+                        },
                     }
                 ]
             },
@@ -286,7 +312,9 @@ async def test_update_user_validation_error(
     }
     await create_user_in_database(**user_data)
     resp = await client.patch(
-        "/user/", params={"user_id": user_data["user_id"]}, json=user_data_updated
+        "/user/",
+        params={"user_id": user_data["user_id"]},
+        json=user_data_updated,
     )
     assert resp.status_code == expected_status_code
     resp_data = resp.json()

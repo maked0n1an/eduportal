@@ -2,12 +2,9 @@ import asyncio
 
 import asyncpg
 import pytest
-from httpx import ASGITransport
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker
-from sqlalchemy.ext.asyncio import AsyncEngine
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
+                                    async_sessionmaker, create_async_engine)
 
 from main import app
 from src.config import TEST_DATABASE_URL
@@ -60,7 +57,9 @@ async def client_fixture(session: AsyncSession):
 
 @pytest.fixture(scope="session")
 async def asyncpg_pool():
-    pool = await asyncpg.create_pool("".join(TEST_DATABASE_URL.split("+asyncpg")))
+    pool = await asyncpg.create_pool(
+        "".join(TEST_DATABASE_URL.split("+asyncpg"))
+    )
     yield pool
     await pool.close()
 
@@ -70,7 +69,9 @@ async def clean_tables(asyncpg_pool):
     yield
 
     async with asyncpg_pool.acquire() as conn:
-        await conn.execute("""TRUNCATE TABLE users RESTART IDENTITY CASCADE;""")
+        await conn.execute(
+            """TRUNCATE TABLE users RESTART IDENTITY CASCADE;"""
+        )
 
 
 @pytest.fixture
