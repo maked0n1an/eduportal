@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import UserEntity
+from src.db.models import UserEntity
 
 
 class UserDAL:

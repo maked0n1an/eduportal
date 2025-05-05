@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import (
     AsyncEngine
 )
 
-from config import TEST_DATABASE_URL
-from db.models import BaseEntity
-from db.database import get_db_session
+from src.config import TEST_DATABASE_URL
+from src.db.models import BaseEntity
+from src.db.database import get_db_session
 from main import app
 
 
@@ -23,7 +23,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session", name="engine")
+@pytest.fixture(name="engine", scope="session")
 async def engine_fixture():
     test_async_engine = create_async_engine(TEST_DATABASE_URL, future=True)
 
@@ -44,7 +44,7 @@ async def session_fixture(engine: AsyncEngine):
         await session.rollback()
 
 
-@pytest.fixture(name="client")
+@pytest.fixture(name="client", scope="function")
 async def client_fixture(session: AsyncSession):
     async def __override_db_session():
         yield session
