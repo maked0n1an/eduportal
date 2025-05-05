@@ -3,12 +3,12 @@ up() {
 }
 
 down() {
-    docker compose -f src/docker-compose.yaml down 
+    docker compose -f src/docker-compose.yaml down
     docker network prune --force
 }
 
 
-case "$1" in 
+case "$1" in
     "up")
         up
         ;;

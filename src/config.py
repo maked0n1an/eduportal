@@ -1,4 +1,5 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
 class DbSettings(BaseSettings):
@@ -15,17 +16,21 @@ class DbSettings(BaseSettings):
     TEST_DB_NAME: str
 
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file=".env",
         # extra='ignore'
     )
 
     def get_db_url(self):
-        return (f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@'
-                f'{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}')
+        return (
+            f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
+            f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
     def get_test_db_url(self):
-        return (f'postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASSWORD}@'
-                f'{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}')
+        return (
+            f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASSWORD}@"
+            f"{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
+        )
 
 
 db_settings = DbSettings()
