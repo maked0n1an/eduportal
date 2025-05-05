@@ -1,19 +1,20 @@
-from uuid import UUID
 from typing import List
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.models import (
-    UserCreate,
-    UserDeletedResponse,
-    UserGetByEmailRequest,
-    UserGetByIdRequest,
-    UserShowResponse,
-    UserUpdateRequest,
-    UserUpdatedResponse
-)
+from src.api.models import UserCreate
+from src.api.models import UserDeletedResponse
+from src.api.models import UserGetByEmailRequest
+from src.api.models import UserGetByIdRequest
+from src.api.models import UserShowResponse
+from src.api.models import UserUpdatedResponse
+from src.api.models import UserUpdateRequest
 from src.db.dals import UserDAL
 from src.db.database import get_db_session
 from src.db.models import UserEntity
@@ -27,9 +28,7 @@ async def _create_new_user(body: UserCreate, db: AsyncSession) -> UserEntity:
         async with session.begin():
             user_dal = UserDAL(session)
             new_user = await user_dal.create_user(
-                name=body.name,
-                surname=body.surname,
-                email=body.email
+                name=body.name, surname=body.surname, email=body.email
             )
             return new_user
 
@@ -43,7 +42,9 @@ async def _get_user(body: BaseModel, db: AsyncSession) -> UserEntity:
             return user
 
 
-async def _get_user_by_email(body: UserGetByEmailRequest, db: AsyncSession) -> UserEntity:
+async def _get_user_by_email(
+    body: UserGetByEmailRequest, db: AsyncSession
+) -> UserEntity:
     return await _get_user(body, db)
 
 
@@ -61,13 +62,14 @@ async def _get_users(db: AsyncSession) -> List[UserEntity]:
             return users
 
 
-async def _update_user(user_id: UUID, updated_user_params: dict, db: AsyncSession) -> UUID | None:
+async def _update_user(
+    user_id: UUID, updated_user_params: dict, db: AsyncSession
+) -> UUID | None:
     async with db as session:
         async with session.begin():
             user_dal = UserDAL(session)
             updated_user_id = await user_dal.update_user(
-                user_id=user_id,
-                values_dict=updated_user_params
+                user_id=user_id, values_dict=updated_user_params
             )
             return updated_user_id
 
@@ -88,20 +90,20 @@ async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db_sessio
 @user_router.get("/by-email")
 async def get_user_by_email(
     body: UserGetByEmailRequest = Query(...),
-    db_session: AsyncSession = Depends(get_db_session)
+    db_session: AsyncSession = Depends(get_db_session),
 ) -> UserShowResponse:
     return await _get_user_by_email(body, db_session)
 
 
 @user_router.get("/{user_id}")
 async def get_user_by_id(
-    user_id: UUID,
-    db_session: AsyncSession = Depends(get_db_session)
+    user_id: UUID, db_session: AsyncSession = Depends(get_db_session)
 ) -> UserShowResponse:
     user = await _get_user_by_id(user_id, db_session)
     if user is None:
         raise HTTPException(
-            status_code=404, detail=f"User with id {user_id} not found.")
+            status_code=404, detail=f"User with id {user_id} not found."
+        )
     return user
 
 
@@ -114,13 +116,15 @@ async def get_user_by_id(
 async def update_user_by_id(
     user_id: UUID,
     body: UserUpdateRequest,
-    db_session: AsyncSession = Depends(get_db_session)
+    db_session: AsyncSession = Depends(get_db_session),
 ) -> UserUpdatedResponse:
     updated_user_params = body.model_dump(exclude_unset=True)
 
     if updated_user_params == {}:
         raise HTTPException(
-            status_code=422, detail="At least one parameter for user update info should be provided")
+            status_code=422,
+            detail="At least one parameter for user update info should be provided",
+        )
 
     user = await _get_user_by_id(user_id, db_session)
     if user is None:
@@ -134,8 +138,7 @@ async def update_user_by_id(
 
 @user_router.delete("/")
 async def delete_user_by_id(
-    user_id: UUID,
-    db_session: AsyncSession = Depends(get_db_session)
+    user_id: UUID, db_session: AsyncSession = Depends(get_db_session)
 ) -> UserDeletedResponse:
     user = await _get_user_by_id(user_id, db_session)
 
