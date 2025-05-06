@@ -1,17 +1,27 @@
+from logging import getLogger
 from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.models import (UserCreate, UserDeletedResponse,
-                            UserGetByEmailRequest, UserGetByIdRequest,
-                            UserShowResponse, UserUpdatedResponse,
-                            UserUpdateRequest)
+from src.api.models import (
+    UserCreate,
+    UserDeletedResponse,
+    UserGetByEmailRequest,
+    UserGetByIdRequest,
+    UserShowResponse,
+    UserUpdatedResponse,
+    UserUpdateRequest,
+)
 from src.db.dals import UserDAL
 from src.db.database import get_db_session
 from src.db.models import UserEntity
+from src.utils import PasswordHasher
+
+logger = getLogger(__name__)
 
 user_router = APIRouter()
 
@@ -21,7 +31,10 @@ async def _create_new_user(body: UserCreate, db: AsyncSession) -> UserEntity:
         async with session.begin():
             user_dal = UserDAL(session)
             new_user = await user_dal.create_user(
-                name=body.name, surname=body.surname, email=body.email
+                name=body.name,
+                surname=body.surname,
+                email=body.email,
+                hashed_password=PasswordHasher.get_password_hash(body.password),
             )
             return new_user
 
@@ -76,10 +89,12 @@ async def _delete_user(user_id: UUID, db: AsyncSession) -> UUID | None:
 
 
 @user_router.post("/", response_model=UserShowResponse)
-async def create_user(
-    body: UserCreate, db: AsyncSession = Depends(get_db_session)
-):
-    return await _create_new_user(body, db)
+async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db_session)):
+    try:
+        return await _create_new_user(body, db)
+    except IntegrityError as err:
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
 
 
 @user_router.get("/by-email")
@@ -90,7 +105,7 @@ async def get_user_by_email(
     return await _get_user_by_email(body, db_session)
 
 
-@user_router.get("/{user_id}")
+@user_router.get("/")
 async def get_user_by_id(
     user_id: UUID, db_session: AsyncSession = Depends(get_db_session)
 ) -> UserShowResponse:
@@ -100,11 +115,6 @@ async def get_user_by_id(
             status_code=404, detail=f"User with id {user_id} not found."
         )
     return user
-
-
-# @user_router.get("/", response_model=List[UserShowResponse])
-# async def get_users(db_session: AsyncSession = Depends(get_db_session)):
-#     return await _get_users(db_session)
 
 
 @user_router.patch("/")
@@ -126,10 +136,11 @@ async def update_user_by_id(
         raise HTTPException(
             status_code=404, detail=f"User with id {user_id} not found."
         )
-
-    updated_user_id = await _update_user(
-        user_id, updated_user_params, db_session
-    )
+    try:
+        updated_user_id = await _update_user(user_id, updated_user_params, db_session)
+    except IntegrityError as err:
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
     return UserUpdatedResponse(updated_user_id=updated_user_id)
 
 

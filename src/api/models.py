@@ -1,5 +1,6 @@
 import re
 import uuid
+from enum import Enum
 from typing import Annotated
 
 from fastapi import HTTPException
@@ -16,6 +17,7 @@ class UserCreate(BaseModel):
     name: str
     surname: str
     email: EmailStr
+    password: str
 
     @field_validator("name")
     def validate_name(cls, value):
@@ -78,3 +80,13 @@ class UserUpdateRequest(ConfigModel):
                 status_code=422, detail="Surname should contains only letters"
             )
         return value
+
+
+class TokenTypeEnum(str, Enum):
+    BEARER = "Bearer"
+    JWT = "JWT"
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: TokenTypeEnum

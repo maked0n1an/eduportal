@@ -12,12 +12,14 @@ class UserDAL:
         self.__db_session = db_session
 
     async def create_user(
-        self, name: str, surname: str, email: str
+        self, name: str, surname: str, email: str, hashed_password: str
     ) -> UserEntity:
-        new_user = UserEntity(name=name, surname=surname, email=email)
+        new_user = UserEntity(
+            name=name, surname=surname, email=email, hashed_password=hashed_password
+        )
 
         self.__db_session.add(new_user)
-        await self.__db_session.commit()
+        await self.__db_session.flush()
         return new_user
 
     async def get_all_users(
@@ -43,12 +45,10 @@ class UserDAL:
         result = await self.__db_session.execute(query)
         return result.scalar_one_or_none()
 
-    async def update_user(
-        self, user_id: UUID, values_dict: dict
-    ) -> UUID | None:
+    async def update_user(self, user_id: UUID, values_dict: dict) -> UUID | None:
         query = (
             update(UserEntity)
-            .where(UserEntity.user_id == user_id, UserEntity.is_active == True)
+            .where(UserEntity.user_id == user_id, UserEntity.is_active)
             .values(**values_dict)
             .returning(UserEntity.user_id)
         )
@@ -64,7 +64,7 @@ class UserDAL:
     async def delete_user(self, user_id: UUID) -> UUID | None:
         query = (
             update(UserEntity)
-            .where(UserEntity.user_id == user_id, UserEntity.is_active == True)
+            .where(UserEntity.user_id == user_id, UserEntity.is_active)
             .values(is_active=False)
             .returning(UserEntity.user_id)
         )
