@@ -4,6 +4,7 @@
 .vscode/**/*[!settings].json
 .idea
 .DS_Store
+.**_cache/
 **/results/
 
 user_data/_inputs/csv/**/*[!.example].csv
