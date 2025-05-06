@@ -3,8 +3,12 @@ import asyncio
 import asyncpg
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
-                                    async_sessionmaker, create_async_engine)
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from main import app
 from src.config import TEST_DATABASE_URL
@@ -57,9 +61,7 @@ async def client_fixture(session: AsyncSession):
 
 @pytest.fixture(scope="session")
 async def asyncpg_pool():
-    pool = await asyncpg.create_pool(
-        "".join(TEST_DATABASE_URL.split("+asyncpg"))
-    )
+    pool = await asyncpg.create_pool("".join(TEST_DATABASE_URL.split("+asyncpg")))
     yield pool
     await pool.close()
 
@@ -69,9 +71,7 @@ async def clean_tables(asyncpg_pool):
     yield
 
     async with asyncpg_pool.acquire() as conn:
-        await conn.execute(
-            """TRUNCATE TABLE users RESTART IDENTITY CASCADE;"""
-        )
+        await conn.execute("""TRUNCATE TABLE users RESTART IDENTITY CASCADE;""")
 
 
 @pytest.fixture
@@ -88,16 +88,22 @@ async def get_user_from_database(asyncpg_pool):
 @pytest.fixture
 async def create_user_in_database(asyncpg_pool):
     async def create_user_in_database(
-        user_id: str, name: str, surname: str, email: str, is_active: bool
+        user_id: str,
+        name: str,
+        surname: str,
+        email: str,
+        is_active: bool,
+        hashed_password: str,
     ):
         async with asyncpg_pool.acquire() as connection:
             return await connection.execute(
-                """INSERT INTO users VALUES ($1, $2, $3, $4, $5)""",
+                """INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6)""",
                 user_id,
                 name,
                 surname,
                 email,
                 is_active,
+                hashed_password,
             )
 
     return create_user_in_database

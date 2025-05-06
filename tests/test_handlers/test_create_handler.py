@@ -7,6 +7,7 @@ async def test_create_user(client: AsyncClient, get_user_from_database):
         "name": "Alex",
         "surname": "Sokol",
         "email": "nice@example.com",
+        "password": "simple-password",
     }
 
     response = await client.post("/user/", json=user_data)
@@ -17,6 +18,7 @@ async def test_create_user(client: AsyncClient, get_user_from_database):
     assert data_from_resp["surname"] == user_data["surname"]
     assert data_from_resp["email"] == user_data["email"]
     assert data_from_resp["is_active"] is True
+    assert "password" not in data_from_resp
 
     users_from_db = await get_user_from_database(data_from_resp["user_id"])
     assert len(users_from_db) == 1
@@ -36,11 +38,13 @@ async def test_create_user_duplicate_email_error(
         "name": "Alex",
         "surname": "Vachevsky",
         "email": "vachev@gmail.com",
+        "password": "simple-password",
     }
     user_data_same = {
         "name": "Kyrylo",
         "surname": "Sirnuk",
         "email": "vachev@gmail.com",
+        "password": "simple-password",
     }
 
     response = await client.post("/user/", json=user_data)
@@ -95,6 +99,12 @@ async def test_create_user_duplicate_email_error(
                         "msg": "Field required",
                         "input": {},
                     },
+                    {
+                        "type": "missing",
+                        "loc": ["body", "password"],
+                        "msg": "Field required",
+                        "input": {},
+                    },
                 ]
             },
         ),
@@ -120,15 +130,46 @@ async def test_create_user_duplicate_email_error(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "lol",
-                        "ctx": {
-                            "reason": "An email address must have an @-sign."
-                        },
+                        "ctx": {"reason": "An email address must have an @-sign."},
+                    },
+                    {
+                        "type": "missing",
+                        "loc": ["body", "password"],
+                        "msg": "Field required",
+                        "input": {"name": 123, "surname": 456, "email": "lol"},
                     },
                 ]
             },
         ),
         (
-            {"name": "Nice", "surname": 456, "email": "lol"},
+            {"name": 123, "surname": 456, "email": "lol", "password": "13123131"},
+            422,
+            {
+                "detail": [
+                    {
+                        "type": "string_type",
+                        "loc": ["body", "name"],
+                        "msg": "Input should be a valid string",
+                        "input": 123,
+                    },
+                    {
+                        "type": "string_type",
+                        "loc": ["body", "surname"],
+                        "msg": "Input should be a valid string",
+                        "input": 456,
+                    },
+                    {
+                        "type": "value_error",
+                        "loc": ["body", "email"],
+                        "msg": "value is not a valid email address: An email address must have an @-sign.",
+                        "input": "lol",
+                        "ctx": {"reason": "An email address must have an @-sign."},
+                    },
+                ]
+            },
+        ),
+        (
+            {"name": "Nice", "surname": 456, "email": "lol", "password": "13123131"},
             422,
             {
                 "detail": [
@@ -143,15 +184,18 @@ async def test_create_user_duplicate_email_error(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "lol",
-                        "ctx": {
-                            "reason": "An email address must have an @-sign."
-                        },
+                        "ctx": {"reason": "An email address must have an @-sign."},
                     },
                 ]
             },
         ),
         (
-            {"name": "Nice", "surname": "ToSeeU", "email": "nice.com"},
+            {
+                "name": "Nice",
+                "surname": "ToSeeU",
+                "email": "nice.com",
+                "password": "13123131",
+            },
             422,
             {
                 "detail": [
@@ -160,27 +204,40 @@ async def test_create_user_duplicate_email_error(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "nice.com",
-                        "ctx": {
-                            "reason": "An email address must have an @-sign."
-                        },
+                        "ctx": {"reason": "An email address must have an @-sign."},
                     }
                 ]
             },
         ),
         (
-            {"name": "123", "surname": "ToSeeU", "email": "nice.com"},
+            {"name": "123", "surname": "ToSeeU", "email": "nice.com", "password": ""},
             422,
             {"detail": "Name should contains only letters"},
         ),
         (
-            {"name": "Alex", "surname": "123", "email": "nice.com"},
+            {"name": "Alex", "surname": "123", "email": "nice.com", "password": ""},
             422,
             {"detail": "Surname should contains only letters"},
         ),
         (
-            {"name": "Alex", "surname": "Chernyshov", "email": "nice.com"},
+            {
+                "name": "Alex",
+                "surname": "Chernyshov",
+                "email": "nice.com",
+                "password": "",
+            },
             422,
-            {"detail": "Surname should contains only letters"},
+            {
+                "detail": [
+                    {
+                        "type": "value_error",
+                        "loc": ["body", "email"],
+                        "msg": "value is not a valid email address: An email address must have an @-sign.",
+                        "input": "nice.com",
+                        "ctx": {"reason": "An email address must have an @-sign."},
+                    }
+                ]
+            },
         ),
     ],
 )

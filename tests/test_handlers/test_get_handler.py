@@ -11,13 +11,12 @@ async def test_get_user(
         "name": "Nikolai",
         "surname": "Sviridov",
         "email": "lol@kek.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     await create_user_in_database(**user_data)
 
-    response = await client.get(
-        "/user/", params={"user_id": user_data["user_id"]}
-    )
+    response = await client.get("/user/", params={"user_id": user_data["user_id"]})
     user_from_response = response.json()
 
     assert response.status_code == 200
@@ -36,6 +35,7 @@ async def test_get_user_id_validation_error(
         "name": "Nikolai",
         "surname": "Sviridov",
         "email": "lol@kek.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     await create_user_in_database(**user_data)
@@ -66,14 +66,13 @@ async def test_get_user_not_found(
         "name": "Nikolai",
         "surname": "Sviridov",
         "email": "lol@kek.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     await create_user_in_database(**user_data)
 
     user_id_for_finding = uuid4()
-    response = await client.get(
-        "/user/", params={"user_id": user_id_for_finding}
-    )
+    response = await client.get("/user/", params={"user_id": user_id_for_finding})
 
     assert response.status_code == 404
     assert response.json() == {

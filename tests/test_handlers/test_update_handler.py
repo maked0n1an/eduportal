@@ -12,6 +12,7 @@ async def test_update_user(
         "name": "Vlad",
         "surname": "Zelenka",
         "email": "zvlad@gmail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_updated = {
@@ -47,6 +48,7 @@ async def test_update_only_one_user(
         "name": "Michael",
         "surname": "Jackson",
         "email": "mjackson@mail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_2 = {
@@ -54,6 +56,7 @@ async def test_update_only_one_user(
         "name": "Steve",
         "surname": "Harris",
         "email": "sharris@gmail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_3 = {
@@ -61,6 +64,7 @@ async def test_update_only_one_user(
         "name": "Don",
         "surname": "Huan",
         "email": "donhuan@gmail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_updated = {
@@ -135,9 +139,7 @@ async def test_update_only_one_user(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "",
-                        "ctx": {
-                            "reason": "An email address must have an @-sign."
-                        },
+                        "ctx": {"reason": "An email address must have an @-sign."},
                     }
                 ]
             },
@@ -182,9 +184,7 @@ async def test_update_only_one_user(
                         "loc": ["body", "email"],
                         "msg": "value is not a valid email address: An email address must have an @-sign.",
                         "input": "123",
-                        "ctx": {
-                            "reason": "An email address must have an @-sign."
-                        },
+                        "ctx": {"reason": "An email address must have an @-sign."},
                     }
                 ]
             },
@@ -203,10 +203,10 @@ async def test_update_user_validation_error(
         "name": "Michael",
         "surname": "Jordan",
         "email": "jordan@gmail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     await create_user_in_database(**user_data)
-
     response = await client.patch(
         "/user/",
         params={"user_id": user_data["user_id"]},
@@ -270,6 +270,7 @@ async def test_update_user_duplicate_email_error(
         "name": "Michael",
         "surname": "Jackson",
         "email": "mjackson@mail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_2 = {
@@ -277,6 +278,7 @@ async def test_update_user_duplicate_email_error(
         "name": "Steve",
         "surname": "Harris",
         "email": "sharris@gmail.com",
+        "hashed_password": "SampleHashPassword",
         "is_active": True,
     }
     user_data_updated = {

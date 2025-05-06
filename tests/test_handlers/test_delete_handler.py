@@ -12,12 +12,11 @@ async def test_delete_user(
         "surname": "Shevchenko",
         "email": "lol@kek.com",
         "is_active": True,
+        "hashed_password": "SampleHashPassword",
     }
     await create_user_in_database(**user_data)
 
-    response = await client.delete(
-        "/user/", params={"user_id": user_data["user_id"]}
-    )
+    response = await client.delete("/user/", params={"user_id": user_data["user_id"]})
     assert response.status_code == 200
     assert response.json() == {"deleted_user_id": str(user_data["user_id"])}
 
