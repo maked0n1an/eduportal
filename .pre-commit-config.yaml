@@ -10,14 +10,9 @@ repos:
     hooks:
     -   id: isort
         args: ["--profile", "black", "--line-length", "79"]
--   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.1
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.0
     hooks:
-    -   id: black
-        language_version: python3.10
-        args: ["--line-length=79"]
--   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-    -   id: flake8
-        args: ["--max-line-length=79"]
+    -   id: ruff
+        args: ["--fix"]
+    -   id: ruff-format
