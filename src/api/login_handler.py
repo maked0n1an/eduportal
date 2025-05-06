@@ -22,13 +22,12 @@ login_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
 
-async def _get_user_by_email_for_auth(email: str, db: AsyncSession) -> UserEntity:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            filter = UserGetByEmailRequest(email=email)
-            filter_dict = filter.model_dump()
-            return await user_dal.get_user(filter_dict)
+async def _get_user_by_email_for_auth(email: str, session: AsyncSession) -> UserEntity:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        filter = UserGetByEmailRequest(email=email)
+        filter_dict = filter.model_dump()
+        return await user_dal.get_user(filter_dict)
 
 
 async def _authenticate_user(
@@ -71,9 +70,9 @@ async def _get_current_user_from_token(
 
 @login_router.get("/test_auth_endpoint")
 async def sample_endpoint_under_jwt(
-    current_user: UserShowResponse = Depends(_get_current_user_from_token),
-):
-    return {"success": True, "current_user": current_user}
+    current_user: UserEntity = Depends(_get_current_user_from_token),
+) -> dict[str, UserShowResponse]:
+    return {"current_user": current_user}
 
 
 @login_router.post("/token")

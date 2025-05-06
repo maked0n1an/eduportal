@@ -26,26 +26,24 @@ logger = getLogger(__name__)
 user_router = APIRouter()
 
 
-async def _create_new_user(body: UserCreate, db: AsyncSession) -> UserEntity:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            new_user = await user_dal.create_user(
-                name=body.name,
-                surname=body.surname,
-                email=body.email,
-                hashed_password=PasswordHasher.get_password_hash(body.password),
-            )
-            return new_user
+async def _create_new_user(body: UserCreate, session: AsyncSession) -> UserEntity:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        new_user = await user_dal.create_user(
+            name=body.name,
+            surname=body.surname,
+            email=body.email,
+            hashed_password=PasswordHasher.get_password_hash(body.password),
+        )
+        return new_user
 
 
-async def _get_user(body: BaseModel, db: AsyncSession) -> UserEntity:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            filters = body.model_dump()
-            user = await user_dal.get_user(filters)
-            return user
+async def _get_user(body: BaseModel, session: AsyncSession) -> UserEntity:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        filters = body.model_dump()
+        user = await user_dal.get_user(filters)
+        return user
 
 
 async def _get_user_by_email(
@@ -60,32 +58,29 @@ async def _get_user_by_id(user_id: UUID, db: AsyncSession) -> UserEntity:
     return await _get_user(body, db)
 
 
-async def _get_users(db: AsyncSession) -> List[UserEntity]:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            users = await user_dal.get_all_users()
-            return users
+async def _get_users(session: AsyncSession) -> List[UserEntity]:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        users = await user_dal.get_all_users()
+        return users
 
 
 async def _update_user(
-    user_id: UUID, updated_user_params: dict, db: AsyncSession
+    user_id: UUID, updated_user_params: dict, session: AsyncSession
 ) -> UUID | None:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            updated_user_id = await user_dal.update_user(
-                user_id=user_id, values_dict=updated_user_params
-            )
-            return updated_user_id
+    async with session.begin():
+        user_dal = UserDAL(session)
+        updated_user_id = await user_dal.update_user(
+            user_id=user_id, values_dict=updated_user_params
+        )
+        return updated_user_id
 
 
-async def _delete_user(user_id: UUID, db: AsyncSession) -> UUID | None:
-    async with db as session:
-        async with session.begin():
-            user_dal = UserDAL(session)
-            deleted_user_id = await user_dal.delete_user(user_id)
-            return deleted_user_id
+async def _delete_user(user_id: UUID, session: AsyncSession) -> UUID | None:
+    async with session.begin():
+        user_dal = UserDAL(session)
+        deleted_user_id = await user_dal.delete_user(user_id)
+        return deleted_user_id
 
 
 @user_router.post("/", response_model=UserShowResponse)
