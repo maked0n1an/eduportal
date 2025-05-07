@@ -37,32 +37,36 @@ async def test_get_user(client: AsyncClient, create_user_in_database):
 @pytest.mark.parametrize(
     "test_case",
     [
-        {
-            "name": "user_id_validation_error",
-            "input_data": lambda user_id: 123,
-            "expected_status": 422,
-            "expected_response": {
-                "detail": [
-                    {
-                        "type": "uuid_parsing",
-                        "loc": ["query", "user_id"],
-                        "msg": "Input should be a valid UUID, invalid length: expected length 32 for simple format, found 3",
-                        "input": "123",
-                        "ctx": {
-                            "error": "invalid length: expected length 32 for simple format, found 3"
-                        },
-                    }
-                ]
+        pytest.param(
+            {
+                "input_data": lambda user_id: 123,
+                "expected_status": 422,
+                "expected_response": {
+                    "detail": [
+                        {
+                            "type": "uuid_parsing",
+                            "loc": ["query", "user_id"],
+                            "msg": "Input should be a valid UUID, invalid length: expected length 32 for simple format, found 3",
+                            "input": "123",
+                            "ctx": {
+                                "error": "invalid length: expected length 32 for simple format, found 3"
+                            },
+                        }
+                    ]
+                },
             },
-        },
-        {
-            "name": "user_not_found",
-            "input_data": lambda user_id: uuid4(),
-            "expected_status": 404,
-            "expected_response": lambda user_id: {
-                "detail": f"User with id {user_id} not found."
+            id="user_id_validation_error",
+        ),
+        pytest.param(
+            {
+                "input_data": lambda user_id: uuid4(),
+                "expected_status": 404,
+                "expected_response": lambda user_id: {
+                    "detail": f"User with id {user_id} not found."
+                },
             },
-        },
+            id="user_not_found",
+        ),
     ],
 )
 async def test_get_user_validation_scenarios(

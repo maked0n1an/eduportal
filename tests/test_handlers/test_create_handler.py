@@ -74,179 +74,134 @@ async def test_create_user_duplicate_email_error(
 
 
 @pytest.mark.parametrize(
-    "user_data_for_creation, expected_status_code, expected_detail",
+    "test_case",
     [
-        (
-            {},
-            422,
+        pytest.param(
             {
-                "detail": [
-                    {
-                        "type": "missing",
-                        "loc": ["body", "name"],
-                        "msg": "Field required",
-                        "input": {},
-                    },
-                    {
-                        "type": "missing",
-                        "loc": ["body", "surname"],
-                        "msg": "Field required",
-                        "input": {},
-                    },
-                    {
-                        "type": "missing",
-                        "loc": ["body", "email"],
-                        "msg": "Field required",
-                        "input": {},
-                    },
-                    {
-                        "type": "missing",
-                        "loc": ["body", "password"],
-                        "msg": "Field required",
-                        "input": {},
-                    },
-                ]
+                "user_data": {},
+                "expected_status_code": 422,
+                "expected_detail": {
+                    "detail": [
+                        {
+                            "type": "missing",
+                            "loc": ["body", "name"],
+                            "msg": "Field required",
+                            "input": {},
+                        },
+                        {
+                            "type": "missing",
+                            "loc": ["body", "surname"],
+                            "msg": "Field required",
+                            "input": {},
+                        },
+                        {
+                            "type": "missing",
+                            "loc": ["body", "email"],
+                            "msg": "Field required",
+                            "input": {},
+                        },
+                        {
+                            "type": "missing",
+                            "loc": ["body", "password"],
+                            "msg": "Field required",
+                            "input": {},
+                        },
+                    ]
+                },
             },
+            id="empty_request",
         ),
-        (
-            {"name": 123, "surname": 456, "email": "lol"},
-            422,
+        pytest.param(
             {
-                "detail": [
-                    {
-                        "type": "string_type",
-                        "loc": ["body", "name"],
-                        "msg": "Input should be a valid string",
-                        "input": 123,
-                    },
-                    {
-                        "type": "string_type",
-                        "loc": ["body", "surname"],
-                        "msg": "Input should be a valid string",
-                        "input": 456,
-                    },
-                    {
-                        "type": "value_error",
-                        "loc": ["body", "email"],
-                        "msg": "value is not a valid email address: An email address must have an @-sign.",
-                        "input": "lol",
-                        "ctx": {"reason": "An email address must have an @-sign."},
-                    },
-                    {
-                        "type": "missing",
-                        "loc": ["body", "password"],
-                        "msg": "Field required",
-                        "input": {"name": 123, "surname": 456, "email": "lol"},
-                    },
-                ]
+                "user_data": {"name": 123, "surname": 456, "email": "lol"},
+                "expected_status_code": 422,
+                "expected_detail": {
+                    "detail": [
+                        {
+                            "type": "string_type",
+                            "loc": ["body", "name"],
+                            "msg": "Input should be a valid string",
+                            "input": 123,
+                        },
+                        {
+                            "type": "string_type",
+                            "loc": ["body", "surname"],
+                            "msg": "Input should be a valid string",
+                            "input": 456,
+                        },
+                        {
+                            "type": "value_error",
+                            "loc": ["body", "email"],
+                            "msg": "value is not a valid email address: An email address must have an @-sign.",
+                            "input": "lol",
+                            "ctx": {"reason": "An email address must have an @-sign."},
+                        },
+                        {
+                            "type": "missing",
+                            "loc": ["body", "password"],
+                            "msg": "Field required",
+                            "input": {"name": 123, "surname": 456, "email": "lol"},
+                        },
+                    ]
+                },
             },
+            id="invalid_types_and_missing_password",
         ),
-        (
-            {"name": 123, "surname": 456, "email": "lol", "password": "13123131"},
-            422,
+        pytest.param(
             {
-                "detail": [
-                    {
-                        "type": "string_type",
-                        "loc": ["body", "name"],
-                        "msg": "Input should be a valid string",
-                        "input": 123,
-                    },
-                    {
-                        "type": "string_type",
-                        "loc": ["body", "surname"],
-                        "msg": "Input should be a valid string",
-                        "input": 456,
-                    },
-                    {
-                        "type": "value_error",
-                        "loc": ["body", "email"],
-                        "msg": "value is not a valid email address: An email address must have an @-sign.",
-                        "input": "lol",
-                        "ctx": {"reason": "An email address must have an @-sign."},
-                    },
-                ]
+                "user_data": {
+                    "name": "123",
+                    "surname": "ToSeeU",
+                    "email": "nice.com",
+                    "password": "",
+                },
+                "expected_status_code": 422,
+                "expected_detail": {"detail": "Name should contains only letters"},
             },
+            id="invalid_name_format",
         ),
-        (
-            {"name": "Nice", "surname": 456, "email": "lol", "password": "13123131"},
-            422,
+        pytest.param(
             {
-                "detail": [
-                    {
-                        "type": "string_type",
-                        "loc": ["body", "surname"],
-                        "msg": "Input should be a valid string",
-                        "input": 456,
-                    },
-                    {
-                        "type": "value_error",
-                        "loc": ["body", "email"],
-                        "msg": "value is not a valid email address: An email address must have an @-sign.",
-                        "input": "lol",
-                        "ctx": {"reason": "An email address must have an @-sign."},
-                    },
-                ]
+                "user_data": {
+                    "name": "Alex",
+                    "surname": "123",
+                    "email": "nice.com",
+                    "password": "",
+                },
+                "expected_status_code": 422,
+                "expected_detail": {"detail": "Surname should contains only letters"},
             },
+            id="invalid_surname_format",
         ),
-        (
+        pytest.param(
             {
-                "name": "Nice",
-                "surname": "ToSeeU",
-                "email": "nice.com",
-                "password": "13123131",
+                "user_data": {
+                    "name": "Alex",
+                    "surname": "Chernyshov",
+                    "email": "nice.com",
+                    "password": "",
+                },
+                "expected_status_code": 422,
+                "expected_detail": {
+                    "detail": [
+                        {
+                            "type": "value_error",
+                            "loc": ["body", "email"],
+                            "msg": "value is not a valid email address: An email address must have an @-sign.",
+                            "input": "nice.com",
+                            "ctx": {"reason": "An email address must have an @-sign."},
+                        }
+                    ]
+                },
             },
-            422,
-            {
-                "detail": [
-                    {
-                        "type": "value_error",
-                        "loc": ["body", "email"],
-                        "msg": "value is not a valid email address: An email address must have an @-sign.",
-                        "input": "nice.com",
-                        "ctx": {"reason": "An email address must have an @-sign."},
-                    }
-                ]
-            },
-        ),
-        (
-            {"name": "123", "surname": "ToSeeU", "email": "nice.com", "password": ""},
-            422,
-            {"detail": "Name should contains only letters"},
-        ),
-        (
-            {"name": "Alex", "surname": "123", "email": "nice.com", "password": ""},
-            422,
-            {"detail": "Surname should contains only letters"},
-        ),
-        (
-            {
-                "name": "Alex",
-                "surname": "Chernyshov",
-                "email": "nice.com",
-                "password": "",
-            },
-            422,
-            {
-                "detail": [
-                    {
-                        "type": "value_error",
-                        "loc": ["body", "email"],
-                        "msg": "value is not a valid email address: An email address must have an @-sign.",
-                        "input": "nice.com",
-                        "ctx": {"reason": "An email address must have an @-sign."},
-                    }
-                ]
-            },
+            id="invalid_email_format",
         ),
     ],
 )
 async def test_create_user_validation_error(
     client: AsyncClient,
-    user_data_for_creation,
-    expected_status_code,
-    expected_detail,
+    test_case: dict,
 ):
-    response = await client.post("/user/", json=user_data_for_creation)
-    assert response.status_code == expected_status_code
-    assert response.json() == expected_detail
+    response = await client.post("/user/", json=test_case["user_data"])
+    assert response.status_code == test_case["expected_status_code"]
+    assert response.json() == test_case["expected_detail"]

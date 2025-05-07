@@ -7,8 +7,19 @@ from src.db.models import PortalRole
 from tests.conftest import create_test_auth_header_for_user
 
 
+@pytest.mark.parametrize(
+    "user_roles",
+    (
+        pytest.param([PortalRole.SUPERADMIN], id="superadmin_role"),
+        pytest.param([PortalRole.ADMIN], id="admin_role"),
+        pytest.param([PortalRole.USER], id="regular_user_role"),
+        pytest.param(
+            [PortalRole.USER, PortalRole.SUPERADMIN], id="user_with_superadmin_role"
+        ),
+    ),
+)
 async def test_update_user(
-    client: AsyncClient, create_user_in_database, get_user_from_database
+    client: AsyncClient, create_user_in_database, get_user_from_database, user_roles
 ):
     user_data = {
         "user_id": uuid4(),
@@ -17,7 +28,7 @@ async def test_update_user(
         "email": "zvlad@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
-        "roles": [PortalRole.USER],
+        "roles": user_roles,
     }
     user_data_updated = {
         "name": "Ivan",

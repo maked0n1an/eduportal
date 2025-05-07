@@ -168,20 +168,16 @@ async def test_delete_user_authentication_scenarios(
 
 @pytest.mark.parametrize(
     "user_role_list",
-    [[PortalRole.USER, PortalRole.ADMIN], [PortalRole.USER, PortalRole.SUPERADMIN]],
+    [
+        pytest.param([PortalRole.ADMIN, PortalRole.USER], id="admin_deletes_user"),
+        pytest.param(
+            [PortalRole.SUPERADMIN, PortalRole.USER], id="superadmin_deletes_user"
+        ),
+    ],
 )
 async def test_delete_user_by_privilege_roles(
     client: AsyncClient, create_user_in_database, get_user_from_database, user_role_list
 ):
-    user_data_to_delete = {
-        "user_id": uuid4(),
-        "name": "Mykola",
-        "surname": "Svyrydov",
-        "email": "lol@kek.com",
-        "is_active": True,
-        "hashed_password": "SampleHashedPass",
-        "roles": [PortalRole.USER],
-    }
     user_data = {
         "user_id": uuid4(),
         "name": "Admin",
@@ -191,8 +187,17 @@ async def test_delete_user_by_privilege_roles(
         "hashed_password": "SampleHashedPass",
         "roles": user_role_list,
     }
+    user_data_to_delete = {
+        "user_id": uuid4(),
+        "name": "Mykola",
+        "surname": "Svyrydov",
+        "email": "lol@kek.com",
+        "is_active": True,
+        "hashed_password": "SampleHashedPass",
+        "roles": [PortalRole.USER],
+    }
 
-    for user in [user_data_to_delete, user_data]:
+    for user in [user_data, user_data_to_delete]:
         await create_user_in_database(**user)
 
     response = await client.delete(
@@ -305,3 +310,31 @@ async def test_delete_another_user_error(
 
     assert response.status_code == 403
     assert response.json() == {"detail": "Forbidden."}
+
+
+async def test_reject_delete_superadmin(
+    client: AsyncClient, create_user_in_database, get_user_from_database
+):
+    user_to_delete = {
+        "user_id": uuid4(),
+        "name": "Admin",
+        "surname": "Adminov",
+        "email": "admin@kek.com",
+        "is_active": True,
+        "hashed_password": "SampleHashedPass",
+        "roles": [PortalRole.SUPERADMIN],
+    }
+
+    await create_user_in_database(**user_to_delete)
+
+    response = await client.delete(
+        "/user/",
+        params={"user_id": user_to_delete["user_id"]},
+        headers=create_test_auth_header_for_user(user_to_delete["email"]),
+    )
+
+    assert response.status_code == 406
+    assert response.json() == {"detail": "Superadmin cannot be deleted via API."}
+
+    db_user = await get_user_from_database(user_to_delete["user_id"])
+    assert PortalRole.SUPERADMIN in dict(db_user[0])["roles"]
