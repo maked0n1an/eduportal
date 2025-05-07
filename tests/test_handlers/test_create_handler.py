@@ -248,6 +248,5 @@ async def test_create_user_validation_error(
     expected_detail,
 ):
     response = await client.post("/user/", json=user_data_for_creation)
-    data_from_resp = response.json()
     assert response.status_code == expected_status_code
-    assert data_from_resp == expected_detail
+    assert response.json() == expected_detail

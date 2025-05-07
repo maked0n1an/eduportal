@@ -1,4 +1,5 @@
 import asyncio
+from datetime import timedelta
 
 import asyncpg
 import pytest
@@ -11,9 +12,11 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from main import app
+from src.api.actions.auth import auth_settings
 from src.config import TEST_DATABASE_URL
 from src.db.database import get_db_session
 from src.db.models import BaseEntity
+from src.security import create_access_token
 
 
 @pytest.fixture(scope="session")
@@ -107,3 +110,11 @@ async def create_user_in_database(asyncpg_pool):
             )
 
     return create_user_in_database
+
+
+def create_test_auth_header_for_user(email: str) -> dict[str, str]:
+    access_token = create_access_token(
+        data={"sub": email},
+        expires_delta=timedelta(minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return {"Authorization": f"Bearer {access_token}"}
