@@ -14,7 +14,7 @@ from src.api.actions.user import (
     _update_user,
     check_user_permissions,
 )
-from src.api.models import (
+from src.api.schemas import (
     UserCreate,
     UserDeletedResponse,
     UserGetByEmailRequest,

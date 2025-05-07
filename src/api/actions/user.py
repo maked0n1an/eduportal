@@ -1,10 +1,11 @@
 from typing import List
 from uuid import UUID
 
+from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.models import (
+from src.api.schemas import (
     UserCreate,
     UserGetByEmailRequest,
     UserGetByIdRequest,

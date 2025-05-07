@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.models import UserGetByEmailRequest
+from src.api.schemas import UserGetByEmailRequest
 from src.config import auth_settings
 from src.db.dals import UserDAL
 from src.db.database import get_db_session
