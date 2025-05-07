@@ -1,5 +1,6 @@
 import asyncio
 from datetime import timedelta
+from typing import List
 
 import asyncpg
 import pytest
@@ -14,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
 from main import app
 from src.api.actions.auth import auth_settings
 from src.config import TEST_DATABASE_URL
+from src.db.dals import PortalRole
 from src.db.database import get_db_session
 from src.db.models import BaseEntity
 from src.security import create_access_token
@@ -97,16 +99,18 @@ async def create_user_in_database(asyncpg_pool):
         email: str,
         is_active: bool,
         hashed_password: str,
+        roles: List[PortalRole],
     ):
         async with asyncpg_pool.acquire() as connection:
             return await connection.execute(
-                """INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6)""",
+                """INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6, $7)""",
                 user_id,
                 name,
                 surname,
                 email,
                 is_active,
                 hashed_password,
+                [role.value for role in roles],
             )
 
     return create_user_in_database

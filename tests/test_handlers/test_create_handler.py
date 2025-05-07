@@ -20,9 +20,9 @@ async def test_create_user(client: AsyncClient, get_user_from_database):
     assert data_from_resp["is_active"] is True
     assert "password" not in data_from_resp
 
-    users_from_db = await get_user_from_database(data_from_resp["user_id"])
-    assert len(users_from_db) == 1
-    user_from_db = dict(users_from_db[0])
+    db_records = await get_user_from_database(data_from_resp["user_id"])
+    assert len(db_records) == 1
+    user_from_db = dict(db_records[0])
 
     assert user_from_db["name"] == user_data["name"]
     assert user_from_db["surname"] == user_data["surname"]
@@ -56,9 +56,9 @@ async def test_create_user_duplicate_email_error(
     assert data_from_resp["email"] == user_data["email"]
     assert data_from_resp["is_active"] is True
 
-    users_from_db = await get_user_from_database(data_from_resp["user_id"])
-    assert len(users_from_db) == 1
-    user_from_db = dict(users_from_db[0])
+    db_records = await get_user_from_database(data_from_resp["user_id"])
+    assert len(db_records) == 1
+    user_from_db = dict(db_records[0])
 
     assert user_from_db["name"] == user_data["name"]
     assert user_from_db["surname"] == user_data["surname"]

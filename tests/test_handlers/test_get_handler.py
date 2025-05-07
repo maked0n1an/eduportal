@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from httpx import AsyncClient
 
+from src.db.models import PortalRole
 from tests.conftest import create_test_auth_header_for_user
 
 
@@ -14,6 +15,7 @@ async def test_get_user(client: AsyncClient, create_user_in_database):
         "email": "lol@kek.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
@@ -73,6 +75,7 @@ async def test_get_user_validation_scenarios(
         "email": "lol@kek.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
@@ -151,6 +154,7 @@ async def test_get_user_authentication_scenarios(
         "email": "lol@kek.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 

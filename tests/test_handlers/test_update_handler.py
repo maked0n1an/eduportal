@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from httpx import AsyncClient
 
+from src.db.models import PortalRole
 from tests.conftest import create_test_auth_header_for_user
 
 
@@ -16,6 +17,7 @@ async def test_update_user(
         "email": "zvlad@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_updated = {
         "name": "Ivan",
@@ -32,8 +34,8 @@ async def test_update_user(
     )
     response_data = response.json()
 
-    users_from_db = await get_user_from_database(user_data["user_id"])
-    user_from_db = dict(users_from_db[0])
+    db_records = await get_user_from_database(user_data["user_id"])
+    user_from_db = dict(db_records[0])
 
     assert response.status_code == 200
     assert response_data["updated_user_id"] == str(user_data["user_id"])
@@ -54,6 +56,7 @@ async def test_update_only_one_user(
         "email": "mjackson@mail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_2 = {
         "user_id": uuid4(),
@@ -62,6 +65,7 @@ async def test_update_only_one_user(
         "email": "sharris@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_3 = {
         "user_id": uuid4(),
@@ -70,6 +74,7 @@ async def test_update_only_one_user(
         "email": "donhuan@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_updated = {
         "name": "Michael",
@@ -230,6 +235,7 @@ async def test_update_user_validation_error(
         "email": "jordan@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
@@ -254,6 +260,7 @@ async def test_update_user_id_validation_error(
         "email": "jordan@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
@@ -296,6 +303,7 @@ async def test_update_user_not_found_error(
         "email": "jordan@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
@@ -327,6 +335,7 @@ async def test_update_user_duplicate_email_error(
         "email": "mjackson@mail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_2 = {
         "user_id": uuid4(),
@@ -335,6 +344,7 @@ async def test_update_user_duplicate_email_error(
         "email": "sharris@gmail.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     user_data_updated = {
         "email": user_data_2["email"],
@@ -391,7 +401,7 @@ async def test_update_user_duplicate_email_error(
         ),
     ],
 )
-async def test_get_user_authentication_scenarios(
+async def test_update_user_authentication_scenarios(
     client: AsyncClient, create_user_in_database, test_case
 ):
     user_data = {
@@ -401,6 +411,7 @@ async def test_get_user_authentication_scenarios(
         "email": "lol@kek.com",
         "hashed_password": "SampleHashPassword",
         "is_active": True,
+        "roles": [PortalRole.USER],
     }
     await create_user_in_database(**user_data)
 
