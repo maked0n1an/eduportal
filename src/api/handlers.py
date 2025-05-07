@@ -12,6 +12,7 @@ from src.api.actions.user import (
     _get_user_by_email,
     _get_user_by_id,
     _update_user,
+    check_user_permissions,
 )
 from src.api.models import (
     UserCreate,
@@ -75,11 +76,18 @@ async def update_user_by_id(
             detail="At least one parameter for user update info should be provided",
         )
 
-    user = await _get_user_by_id(user_id, db_session)
-    if user is None:
+    user_to_update = await _get_user_by_id(user_id, db_session)
+    if user_to_update is None:
         raise HTTPException(
             status_code=404, detail=f"User with id {user_id} not found."
         )
+
+    if user_id != current_user.user_id:
+        if check_user_permissions(
+            target_user=user_to_update, current_user=current_user
+        ):
+            raise HTTPException(status_code=403, detail="Forbidden")
+
     try:
         updated_user_id = await _update_user(user_id, updated_user_params, db_session)
     except IntegrityError as err:
@@ -94,12 +102,22 @@ async def delete_user_by_id(
     db_session: AsyncSession = Depends(get_db_session),
     current_user: UserEntity = Depends(get_current_user_from_token),
 ) -> UserDeletedResponse:
-    user = await _get_user_by_id(user_id, db_session)
+    user_to_delete = await _get_user_by_id(user_id, db_session)
 
-    if user is None:
+    if user_to_delete is None:
         raise HTTPException(
             status_code=404, detail=f"User with id {user_id} not found."
         )
 
+    if not check_user_permissions(
+        target_user=user_to_delete, current_user=current_user
+    ):
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
     deleted_user_id = await _delete_user(user_id, db_session)
+    if deleted_user_id is None:
+        raise HTTPException(
+            status_code=404, detail=f"User with id {user_id} not found."
+        )
+
     return UserDeletedResponse(deleted_user_id=deleted_user_id)
