@@ -13,4 +13,4 @@ app.include_router(main_api_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=8010)
