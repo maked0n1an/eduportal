@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.models import UserEntity
+from src.db.models import PortalRole, UserEntity
 
 
 class UserDAL:
@@ -12,10 +12,19 @@ class UserDAL:
         self.__db_session = db_session
 
     async def create_user(
-        self, name: str, surname: str, email: str, hashed_password: str
+        self,
+        name: str,
+        surname: str,
+        email: str,
+        hashed_password: str,
+        roles: List[PortalRole],
     ) -> UserEntity:
         new_user = UserEntity(
-            name=name, surname=surname, email=email, hashed_password=hashed_password
+            name=name,
+            surname=surname,
+            email=email,
+            hashed_password=hashed_password,
+            roles=roles,
         )
 
         self.__db_session.add(new_user)
