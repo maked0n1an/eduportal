@@ -32,3 +32,19 @@ class UserEntity(BaseEntity):
     roles: Mapped[List[PortalRole]] = mapped_column(
         ARRAY(String), default=[PortalRole.USER]
     )
+
+    @property
+    def is_superadmin(self) -> bool:
+        return PortalRole.SUPERADMIN in self.roles
+
+    @property
+    def is_admin(self) -> bool:
+        return PortalRole.ADMIN in self.roles
+
+    def enrich_admin_roles_by_admin_role(self):
+        if not self.is_admin:
+            return {*self.roles, PortalRole.ADMIN}
+
+    def remove_admin_privileges_from_model(self):
+        if self.is_admin:
+            return {role for role in self.roles if role != PortalRole.ADMIN}

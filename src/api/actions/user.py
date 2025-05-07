@@ -75,6 +75,10 @@ async def _delete_user(user_id: UUID, session: AsyncSession) -> UUID | None:
 
 def check_user_permissions(target_user: UserEntity, current_user: UserEntity) -> bool:
     if target_user.user_id == current_user.user_id:
+        if PortalRole.SUPERADMIN in current_user.roles:
+            raise HTTPException(
+                status_code=406, detail="Superadmin cannot be deleted via API."
+            )
         return True
 
     if not {PortalRole.ADMIN, PortalRole.SUPERADMIN}.intersection(current_user.roles):

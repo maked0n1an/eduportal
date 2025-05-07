@@ -15,9 +15,8 @@ from sqlalchemy.ext.asyncio import (
 from main import app
 from src.api.actions.auth import auth_settings
 from src.config import TEST_DATABASE_URL
-from src.db.models import PortalRole
 from src.db.database import get_db_session
-from src.db.models import BaseEntity
+from src.db.models import BaseEntity, PortalRole
 from src.security import create_access_token
 
 
