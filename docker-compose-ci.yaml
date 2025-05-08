@@ -1,0 +1,27 @@
+version: '3.0'
+services:
+  db:
+    container_name: "eduportal-db"
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - custom
+  app:
+    container_name: eduportal-app
+    image: eduportal-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT}:8000"
+    networks:
+      - custom
+networks:
+  custom:
+    driver: bridge

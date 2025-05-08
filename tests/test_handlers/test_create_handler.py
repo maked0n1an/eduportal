@@ -65,7 +65,9 @@ async def test_create_user_duplicate_email_error(
     assert user_from_db["email"] == user_data["email"]
     assert user_from_db["is_active"] is True
     assert str(user_from_db["user_id"]) == data_from_resp["user_id"]
+
     response = await client.post("/user/", json=user_data_same)
+
     assert response.status_code == 503
     assert (
         'duplicate key value violates unique constraint "users_email_key"'

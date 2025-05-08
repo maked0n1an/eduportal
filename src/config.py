@@ -22,6 +22,8 @@ class DbSettings(BaseSettings):
     TEST_DB_PORT: str
     TEST_DB_NAME: str
 
+    APP_PORT: int
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     def get_db_url(self):
