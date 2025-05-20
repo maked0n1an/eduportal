@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import (
 
 from main import app
 from src.api.actions.auth import auth_settings
-from src.config import TEST_DATABASE_URL
+from src.config import settings
 from src.db.database import get_db_session
 from src.db.models import BaseEntity, PortalRole
 from src.security import create_access_token
@@ -29,7 +29,9 @@ def event_loop():
 
 @pytest.fixture(name="engine", scope="session")
 async def engine_fixture():
-    test_async_engine = create_async_engine(TEST_DATABASE_URL, future=True)
+    test_async_engine = create_async_engine(
+        settings.TEST_DATABASE_URL, future=True
+    )
 
     async with test_async_engine.begin() as conn:
         await conn.run_sync(BaseEntity.metadata.create_all)
@@ -45,7 +47,6 @@ async def session_fixture(engine: AsyncEngine):
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with async_session_maker() as session:
         yield session
-        await session.rollback()
 
 
 @pytest.fixture(name="client", scope="function")
@@ -65,7 +66,9 @@ async def client_fixture(session: AsyncSession):
 
 @pytest.fixture(scope="session")
 async def asyncpg_pool():
-    pool = await asyncpg.create_pool("".join(TEST_DATABASE_URL.split("+asyncpg")))
+    pool = await asyncpg.create_pool(
+        "".join(settings.TEST_DATABASE_URL.split("+asyncpg"))
+    )
     yield pool
     await pool.close()
 
@@ -75,7 +78,9 @@ async def clean_tables(asyncpg_pool):
     yield
 
     async with asyncpg_pool.acquire() as conn:
-        await conn.execute("""TRUNCATE TABLE users RESTART IDENTITY CASCADE;""")
+        await conn.execute(
+            """TRUNCATE TABLE users RESTART IDENTITY CASCADE;"""
+        )
 
 
 @pytest.fixture
@@ -90,7 +95,7 @@ async def get_user_from_database(asyncpg_pool):
 
 
 @pytest.fixture
-async def create_user_in_database(asyncpg_pool):
+async def create_user_in_database(asyncpg_pool: asyncpg.Pool):
     async def create_user_in_database(
         user_id: str,
         name: str,
@@ -118,6 +123,8 @@ async def create_user_in_database(asyncpg_pool):
 def create_test_auth_header_for_user(email: str) -> dict[str, str]:
     access_token = create_access_token(
         data={"sub": email},
-        expires_delta=timedelta(minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        expires_delta=timedelta(
+            minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        ),
     )
     return {"Authorization": f"Bearer {access_token}"}

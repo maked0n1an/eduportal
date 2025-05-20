@@ -15,7 +15,9 @@ from src.db.models import PortalRole, UserEntity
 from src.utils import PasswordHasher
 
 
-async def _create_new_user(body: UserCreate, session: AsyncSession) -> UserEntity:
+async def _create_new_user(
+    body: UserCreate, session: AsyncSession
+) -> UserEntity:
     async with session.begin():
         user_dal = UserDAL(session)
         new_user = await user_dal.create_user(
@@ -73,7 +75,9 @@ async def _delete_user(user_id: UUID, session: AsyncSession) -> UUID | None:
         return deleted_user_id
 
 
-def check_user_permissions(target_user: UserEntity, current_user: UserEntity) -> bool:
+def check_user_permissions(
+    target_user: UserEntity, current_user: UserEntity
+) -> bool:
     if target_user.user_id == current_user.user_id:
         if PortalRole.SUPERADMIN in current_user.roles:
             raise HTTPException(
@@ -81,11 +85,15 @@ def check_user_permissions(target_user: UserEntity, current_user: UserEntity) ->
             )
         return True
 
-    if not {PortalRole.ADMIN, PortalRole.SUPERADMIN}.intersection(current_user.roles):
+    if not {PortalRole.ADMIN, PortalRole.SUPERADMIN}.intersection(
+        current_user.roles
+    ):
         return False
 
     if PortalRole.ADMIN in current_user.roles:
-        if {PortalRole.SUPERADMIN, PortalRole.ADMIN}.intersection(target_user.roles):
+        if {PortalRole.SUPERADMIN, PortalRole.ADMIN}.intersection(
+            target_user.roles
+        ):
             return False
 
         if PortalRole.ADMIN in target_user.roles:

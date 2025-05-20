@@ -95,7 +95,9 @@ async def test_get_user_validation_scenarios(
     assert response.status_code == test_case["expected_status"]
 
     if callable(test_case["expected_response"]):
-        assert response.json() == test_case["expected_response"](request_user_id)
+        assert response.json() == test_case["expected_response"](
+            request_user_id
+        )
     else:
         assert response.json() == test_case["expected_response"]
 
@@ -105,7 +107,9 @@ async def test_get_user_validation_scenarios(
     [
         pytest.param(
             {
-                "headers": lambda email: create_test_auth_header_for_user(email),
+                "headers": lambda email: create_test_auth_header_for_user(
+                    email
+                ),
                 "expected_status": 200,
                 "expected_response": lambda user_data: {
                     "user_id": str(user_data["user_id"]),
@@ -119,9 +123,13 @@ async def test_get_user_validation_scenarios(
         ),
         pytest.param(
             {
-                "headers": lambda email: create_test_auth_header_for_user(email + "a"),
+                "headers": lambda email: create_test_auth_header_for_user(
+                    email + "a"
+                ),
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_credentials",
         ),
@@ -134,7 +142,9 @@ async def test_get_user_validation_scenarios(
                     + "a"
                 },
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_jwt",
         ),

@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=python:3.10-slim-buster
-FROM BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends \

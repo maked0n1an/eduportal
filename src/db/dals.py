@@ -54,7 +54,9 @@ class UserDAL:
         result = await self.__db_session.execute(query)
         return result.scalar_one_or_none()
 
-    async def update_user(self, user_id: UUID, values_dict: dict) -> UUID | None:
+    async def update_user(
+        self, user_id: UUID, values_dict: dict
+    ) -> UUID | None:
         query = (
             update(UserEntity)
             .where(UserEntity.user_id == user_id, UserEntity.is_active)
@@ -78,4 +80,4 @@ class UserDAL:
             .returning(UserEntity.user_id)
         )
         result = await self.__db_session.execute(query)
-        return result.scalar_one_or_none()
+        return result.scalar()

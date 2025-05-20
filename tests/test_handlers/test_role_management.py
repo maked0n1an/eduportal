@@ -71,7 +71,9 @@ async def test_revoke_admin_role_from_user_by_superadmin(
     resp = await client.delete(
         "/user/admin_privilege",
         params={"user_id": user_data_for_revoke["user_id"]},
-        headers=create_test_auth_header_for_user(user_data_who_revoke["email"]),
+        headers=create_test_auth_header_for_user(
+            user_data_who_revoke["email"]
+        ),
     )
     data_from_resp = resp.json()
     assert resp.status_code == 200
@@ -90,7 +92,8 @@ async def test_revoke_admin_role_from_user_by_superadmin(
             id="admin_attempts_to_revoke_another_admin",
         ),
         pytest.param(
-            [PortalRole.USER], id="regular_user_attempts_to_revoke_another_admin"
+            [PortalRole.USER],
+            id="regular_user_attempts_to_revoke_another_admin",
         ),
     ],
 )
@@ -130,7 +133,9 @@ async def test_prevent_unauthorized_admin_role_revocation(
 
     assert resp.status_code == 403
     assert data_from_resp == {"detail": "Forbidden."}
-    not_revoked_user_from_db = await get_user_from_database(user_to_revoke["user_id"])
+    not_revoked_user_from_db = await get_user_from_database(
+        user_to_revoke["user_id"]
+    )
     assert len(not_revoked_user_from_db) == 1
     not_revoked_user_from_db = dict(not_revoked_user_from_db[0])
     assert not_revoked_user_from_db["user_id"] == user_to_revoke["user_id"]

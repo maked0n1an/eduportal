@@ -13,7 +13,9 @@ from src.utils import PasswordHasher
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
 
-async def _get_user_by_email_for_auth(email: str, session: AsyncSession) -> UserEntity:
+async def _get_user_by_email_for_auth(
+    email: str, session: AsyncSession
+) -> UserEntity:
     async with session.begin():
         user_dal = UserDAL(session)
         filter = UserGetByEmailRequest(email=email)

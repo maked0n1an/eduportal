@@ -4,7 +4,7 @@ from fastapi import APIRouter, FastAPI
 from src.api.handlers import user_router
 from src.api.login_handler import login_router
 from src.api.service import service_router
-from src.config import db_settings
+from src.config import settings
 
 app = FastAPI(title="eduportal")
 
@@ -17,4 +17,4 @@ app.include_router(main_api_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=db_settings.APP_PORT)
+    uvicorn.run(app, host="0.0.0.0", port=settings.APP_PORT)

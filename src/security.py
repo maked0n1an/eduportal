@@ -5,7 +5,9 @@ from jose import jwt
 from src.config import auth_settings
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict, expires_delta: timedelta | None = None
+) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc)
 

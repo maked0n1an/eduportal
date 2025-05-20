@@ -100,7 +100,9 @@ async def test_delete_user_validation_scenarios(
     assert response.status_code == test_case["expected_status"]
 
     if callable(test_case["expected_response"]):
-        assert response.json() == test_case["expected_response"](request_user_id)
+        assert response.json() == test_case["expected_response"](
+            request_user_id
+        )
     else:
         assert response.json() == test_case["expected_response"]
 
@@ -110,9 +112,13 @@ async def test_delete_user_validation_scenarios(
     [
         pytest.param(
             {
-                "headers": lambda email: create_test_auth_header_for_user(email + "a"),
+                "headers": lambda email: create_test_auth_header_for_user(
+                    email + "a"
+                ),
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_credentials",
         ),
@@ -125,7 +131,9 @@ async def test_delete_user_validation_scenarios(
                     + "a"
                 },
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_jwt",
         ),
@@ -169,14 +177,20 @@ async def test_delete_user_authentication_scenarios(
 @pytest.mark.parametrize(
     "user_role_list",
     [
-        pytest.param([PortalRole.ADMIN, PortalRole.USER], id="admin_deletes_user"),
         pytest.param(
-            [PortalRole.SUPERADMIN, PortalRole.USER], id="superadmin_deletes_user"
+            [PortalRole.ADMIN, PortalRole.USER], id="admin_deletes_user"
+        ),
+        pytest.param(
+            [PortalRole.SUPERADMIN, PortalRole.USER],
+            id="superadmin_deletes_user",
         ),
     ],
 )
 async def test_delete_user_by_privilege_roles(
-    client: AsyncClient, create_user_in_database, get_user_from_database, user_role_list
+    client: AsyncClient,
+    create_user_in_database,
+    get_user_from_database,
+    user_role_list,
 ):
     user_data = {
         "user_id": uuid4(),
@@ -207,7 +221,9 @@ async def test_delete_user_by_privilege_roles(
     )
 
     assert response.status_code == 200
-    assert response.json() == {"deleted_user_id": str(user_data_to_delete["user_id"])}
+    assert response.json() == {
+        "deleted_user_id": str(user_data_to_delete["user_id"])
+    }
 
     db_records = await get_user_from_database(user_data_to_delete["user_id"])
     user_from_db = dict(db_records[0])
@@ -334,7 +350,9 @@ async def test_reject_delete_superadmin(
     )
 
     assert response.status_code == 406
-    assert response.json() == {"detail": "Superadmin cannot be deleted via API."}
+    assert response.json() == {
+        "detail": "Superadmin cannot be deleted via API."
+    }
 
     db_user = await get_user_from_database(user_to_delete["user_id"])
     assert PortalRole.SUPERADMIN in dict(db_user[0])["roles"]

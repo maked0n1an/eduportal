@@ -19,14 +19,18 @@ async def login_for_access_token(
     db: AsyncSession = Depends(get_db_session),
 ) -> Token:
     if not (
-        user := await authenticate_user(form_data.username, form_data.password, db)
+        user := await authenticate_user(
+            form_data.username, form_data.password, db
+        )
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
         )
 
-    access_token_expires = timedelta(minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(
+        minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     access_token = create_access_token(
         data={"sub": user.email, "other_custom_data": [1, 2, 3, 4]},
         expires_delta=access_token_expires,

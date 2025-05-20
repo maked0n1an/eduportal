@@ -14,12 +14,16 @@ from tests.conftest import create_test_auth_header_for_user
         pytest.param([PortalRole.ADMIN], id="admin_role"),
         pytest.param([PortalRole.USER], id="regular_user_role"),
         pytest.param(
-            [PortalRole.USER, PortalRole.SUPERADMIN], id="user_with_superadmin_role"
+            [PortalRole.USER, PortalRole.SUPERADMIN],
+            id="user_with_superadmin_role",
         ),
     ),
 )
 async def test_update_user(
-    client: AsyncClient, create_user_in_database, get_user_from_database, user_roles
+    client: AsyncClient,
+    create_user_in_database,
+    get_user_from_database,
+    user_roles,
 ):
     user_data = {
         "user_id": uuid4(),
@@ -148,7 +152,9 @@ async def test_update_only_one_user(
             {
                 "user_data_updated": {"name": "123"},
                 "expected_status_code": 422,
-                "expected_detail": {"detail": "Name should contains only letters"},
+                "expected_detail": {
+                    "detail": "Name should contains only letters"
+                },
             },
             id="invalid_name_numbers",
         ),
@@ -156,7 +162,9 @@ async def test_update_only_one_user(
             {
                 "user_data_updated": {"surname": "123"},
                 "expected_status_code": 422,
-                "expected_detail": {"detail": "Surname should contains only letters"},
+                "expected_detail": {
+                    "detail": "Surname should contains only letters"
+                },
             },
             id="invalid_surname_numbers",
         ),
@@ -171,7 +179,9 @@ async def test_update_only_one_user(
                             "loc": ["body", "email"],
                             "msg": "value is not a valid email address: An email address must have an @-sign.",
                             "input": "",
-                            "ctx": {"reason": "An email address must have an @-sign."},
+                            "ctx": {
+                                "reason": "An email address must have an @-sign."
+                            },
                         }
                     ]
                 },
@@ -225,7 +235,9 @@ async def test_update_only_one_user(
                             "loc": ["body", "email"],
                             "msg": "value is not a valid email address: An email address must have an @-sign.",
                             "input": "123",
-                            "ctx": {"reason": "An email address must have an @-sign."},
+                            "ctx": {
+                                "reason": "An email address must have an @-sign."
+                            },
                         }
                     ]
                 },
@@ -383,9 +395,13 @@ async def test_update_user_duplicate_email_error(
     [
         pytest.param(
             {
-                "headers": lambda email: create_test_auth_header_for_user(email + "a"),
+                "headers": lambda email: create_test_auth_header_for_user(
+                    email + "a"
+                ),
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_credentials",
         ),
@@ -398,7 +414,9 @@ async def test_update_user_duplicate_email_error(
                     + "a"
                 },
                 "expected_status": 401,
-                "expected_response": {"detail": "Could not validate credentials"},
+                "expected_response": {
+                    "detail": "Could not validate credentials"
+                },
             },
             id="bad_jwt",
         ),

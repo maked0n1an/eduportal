@@ -1,7 +1,7 @@
 version: '3.0'
 services:
   db:
-    container_name: "eduportal-db"
+    container_name: eduportal-db
     image: postgres:latest
     restart: always
     environment:

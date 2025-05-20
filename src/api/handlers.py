@@ -30,7 +30,9 @@ user_router = APIRouter()
 
 
 @user_router.post("/", response_model=UserShowResponse)
-async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db_session)):
+async def create_user(
+    body: UserCreate, db: AsyncSession = Depends(get_db_session)
+):
     try:
         return await _create_new_user(body, db)
     except IntegrityError as err:
@@ -63,7 +65,9 @@ async def grant_admin_privilege(
             detail=f"User with id {user_id} already promoted to admin / superadmin.",
         )
 
-    updated_user_params = {"roles": user_to_promote.enrich_admin_roles_by_admin_role()}
+    updated_user_params = {
+        "roles": user_to_promote.enrich_admin_roles_by_admin_role()
+    }
 
     try:
         updated_user_id = await _update_user(user_id, updated_user_params, db)
@@ -93,7 +97,8 @@ async def revoke_admin_privilege(
         )
     if not user_for_revoke_admin_privileges.is_admin:
         raise HTTPException(
-            status_code=409, detail=f"User with id {user_id} has no admin privileges."
+            status_code=409,
+            detail=f"User with id {user_id} has no admin privileges.",
         )
 
     updated_user_params = {
@@ -101,7 +106,9 @@ async def revoke_admin_privilege(
     }
     try:
         updated_user_id = await _update_user(
-            updated_user_params=updated_user_params, session=db, user_id=user_id
+            updated_user_params=updated_user_params,
+            session=db,
+            user_id=user_id,
         )
     except IntegrityError as err:
         logger.error(err)
@@ -160,7 +167,9 @@ async def update_user_by_id(
             raise HTTPException(status_code=403, detail="Forbidden")
 
     try:
-        updated_user_id = await _update_user(user_id, updated_user_params, db_session)
+        updated_user_id = await _update_user(
+            user_id, updated_user_params, db_session
+        )
     except IntegrityError as err:
         logger.error(err)
         raise HTTPException(status_code=503, detail=f"Database error: {err}")
